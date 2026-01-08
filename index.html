@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gen 1 - V13.6 (Full Features Restored)</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* =========================================
+           CORE VARIABLES
+           ========================================= */
+        :root {
+            --bg-base: #e0e7ff;
+            --bg-image-default: radial-gradient(at 40% 20%, hsla(210, 100%, 76%, 0.7) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 0.7) 0px, transparent 50%);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-blur: 30px;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent: #3b82f6;
+            --sidebar-bg: rgba(255, 255, 255, 0.9);
+            --cal-bg: rgba(255, 255, 255, 0.6);
+            --cal-border: rgba(203, 213, 225, 0.7);
+            --dot-inactive: #cbd5e0;
+            --dot-active: #3b82f6;
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg-base: #0f172a;
+            --bg-image-default: radial-gradient(at 40% 20%, hsla(210, 100%, 26%, 0.5) 0px, transparent 50%), radial-gradient(at 80% 0%, hsla(189, 100%, 26%, 0.5) 0px, transparent 50%);
+            --glass-bg: rgba(30, 41, 59, 0.8);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #60a5fa;
+            --sidebar-bg: rgba(15, 23, 42, 0.9);
+            --cal-bg: rgba(30, 41, 59, 0.6);
+            --cal-border: rgba(71, 85, 105, 0.5);
+            --dot-inactive: #334155;
+            --dot-active: #60a5fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            background-color: var(--bg-base);
+            background-image: var(--bg-image-default);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background 0.5s ease;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        [data-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* TOAST NOTIFICATION (PHASE 2 RESTORED) */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .toast {
+            min-width: 300px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            border: var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-left: 5px solid var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.4s var(--ease-spring);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            pointer-events: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        .liquid-btn {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            color: var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .liquid-btn:hover {
+            transform: translateY(-4px) scale(1.1);
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .liquid-btn:active {
+            transform: scale(0.95);
+        }
+
+        .app-container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 80px;
+            background: var(--sidebar-bg);
+            border-right: var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px 0;
+            z-index: 40000;
+            position: relative;
+        }
+
+        .logo {
+            font-weight: 900;
+            font-size: 1.6rem;
+            color: var(--accent);
+            margin-bottom: 40px;
+            cursor: pointer;
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .nav-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: 0.3s;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .nav-btn:hover,
+        .nav-btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 8px 20px -4px rgba(59, 130, 246, 0.5);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+        }
+
+        .theme-btn {
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: 0.5s;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .view {
+            display: none;
+            height: 100%;
+            padding: 30px 40px;
+            transition: 0.5s var(--ease-spring);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .view.active {
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        #home-view {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 900px;
+            margin-top: 50px;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            border: var(--glass-border);
+            padding: 40px;
+            border-radius: 24px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            box-shadow: var(--glass-shadow);
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+        }
+
+        .card i {
+            font-size: 2.5rem;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+
+        .card:hover i {
+            background: var(--accent);
+            color: white;
+            transform: rotate(10deg);
+        }
+
+        #deep-view {
+            background: #000;
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .timer-large {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .exit-btn {
+            position: absolute;
+            top: 40px;
+            right: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            transition: 0.3s;
+        }
+
+        .exit-btn:hover {
+            background: white;
+            color: black;
+        }
+
+        #panorama-view {
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pomo-box {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            padding: 50px;
+            border-radius: 36px;
+            border: var(--glass-border);
+            text-align: center;
+            width: 450px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .timer-medium {
+            font-size: 5.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono';
+            margin: 20px 0;
+            color: var(--text-primary);
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 14px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.5);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        [data-theme="dark"] .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        #ai-view {
+            padding: 20px 40px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            gap: 20px;
+        }
+
+        .ai-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            padding: 12px 20px;
+            border-radius: 16px;
+            border: var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .api-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .api-input {
+            border: 1px solid var(--cal-border);
+            background: var(--cal-bg);
+            color: var(--text-primary);
+            padding: 8px 30px 8px 10px;
+            border-radius: 8px;
+            outline: none;
+            width: 180px;
+            font-size: 0.9rem;
+        }
+
+        .model-select {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--cal-border);
+            background: var(--cal-bg);
+            color: var(--text-primary);
+            outline: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .upload-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px dashed var(--accent);
+            border-radius: 12px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+
+        .upload-bar:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: var(--accent-hover);
+        }
+
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: 75% 23%;
+            gap: 2%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .cal-wrapper {
+            background: var(--cal-bg);
+            border-radius: 16px;
+            border: 1px solid var(--cal-border);
+            height: 100%;
+            overflow-y: auto;
+            display: grid;
+            position: relative;
+            grid-template-columns: 50px repeat(7, 1fr);
+            grid-auto-rows: 60px;
+            backdrop-filter: blur(5px);
+        }
+
+        .cal-header {
+            position: sticky;
+            top: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--cal-border);
+            border-right: 1px solid var(--cal-border);
+            padding: 10px 5px;
+            font-weight: 700;
+            text-align: center;
+            z-index: 10;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .cal-time {
+            border-right: 1px solid var(--cal-border);
+            border-bottom: 1px solid var(--cal-border);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            display: flex;
+            justify-content: center;
+            padding-top: 5px;
+            font-weight: 500;
+            font-family: 'JetBrains Mono';
+        }
+
+        .cal-cell {
+            border-right: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            position: relative;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+
+        .cal-cell:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        [data-theme="dark"] .cal-cell {
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .event {
+            position: absolute;
+            left: 3px;
+            right: 3px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            overflow: hidden;
+            font-weight: 700;
+            border-left: 4px solid;
+            z-index: 5;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            animation: popIn 0.4s var(--ease-spring) backwards;
+            line-height: 1.3;
+            transition: 0.2s;
+            color: white !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .event:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+            z-index: 6;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .notes-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            border-radius: 16px;
+            border: 1px solid var(--cal-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .notes-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--cal-border);
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .notes-area {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 15px;
+            resize: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            font-family: 'Inter';
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--glass-bg);
+            z-index: 50;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--accent);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s infinite linear;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .widget-draggable {
+            position: fixed;
+            z-index: 20000;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.9);
+            transition: opacity 0.3s, transform 0.3s;
+            resize: both;
+            overflow: hidden;
+            min-width: 300px;
+            min-height: 200px;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        .widget-draggable.show {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+
+        .widget-draggable.active {
+            z-index: 20001;
+        }
+
+        .widget-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--glass-border);
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: var(--accent);
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        #chat-widget {
+            width: 360px;
+            height: 520px;
+            bottom: 120px;
+            right: 50px;
+        }
+
+        #music-panel {
+            width: 350px;
+            height: 600px;
+            bottom: 120px;
+            right: 120px;
+            left: auto;
+        }
+
+        #goals-widget {
+            width: 300px;
+            height: 400px;
+            bottom: 400px;
+            left: 120px;
+        }
+
+        #stats-widget {
+            width: 340px;
+            height: 350px;
+            top: 100px;
+            right: 50px;
+            left: auto;
+            bottom: auto;
+        }
+
+        #settings-widget {
+            width: 320px;
+            height: 500px;
+            top: 100px;
+            left: 100px;
+            bottom: auto;
+            right: auto;
+        }
+
+        .fab {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: white;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: fixed;
+            bottom: 30px;
+            z-index: 30000;
+        }
+
+        .fab:hover {
+            transform: scale(1.1) translateY(-5px);
+        }
+
+        #chat-fab {
+            right: 30px;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+        }
+
+        #music-toggle {
+            right: 100px;
+            left: auto;
+            background: linear-gradient(135deg, #f472b6, #db2777);
+            box-shadow: 0 0 0 0 rgba(244, 114, 182, 0.7);
+        }
+
+        #stats-fab {
+            right: 170px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        #goals-fab {
+            right: 240px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+        }
+
+        #music-toggle:hover {
+            box-shadow: 0 0 20px rgba(244, 114, 182, 0.6);
+        }
+
+        #music-toggle.playing {
+            animation: spin 4s linear infinite;
+        }
+
+        .chat-messages,
+        .goal-list,
+        .playlist-list,
+        .settings-content {
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.bot {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.7);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .goal-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .goal-text {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .music-widget {
+            width: 100%;
+            height: 100%;
+            background: rgba(30, 30, 35, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+        }
+
+        .player-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .album-art-container {
+            width: 100%;
+            flex: 1;
+            min-height: 100px;
+            margin-bottom: 15px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .album-art {
+            height: 100%;
+            aspect-ratio: 1/1;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transition: transform 0.5s;
+            max-width: 100%;
+        }
+
+        .album-art img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .album-art.playing {
+            transform: scale(1.05);
+        }
+
+        .track-info {
+            text-align: center;
+            margin-bottom: 15px;
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .track-info h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-info p {
+            color: #aaaaaa;
+            font-size: 0.9rem;
+        }
+
+        .controls-wrapper {
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .progress-container {
+            width: 100%;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #aaaaaa;
+            margin-top: 8px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 15px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .main-play {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #fff;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #aaaaaa;
+            width: 80%;
+            margin: 0 auto;
+        }
+
+        #volume-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .playlist-panel {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80%;
+            background: #15151a;
+            border-top-left-radius: 30px;
+            border-top-right-radius: 30px;
+            padding: 20px;
+            transform: translateY(110%);
+            transition: transform 0.3s;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .playlist-panel.active {
+            transform: translateY(0);
+        }
+
+        .playlist-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        .add-song-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+
+        #yt-url-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #fff;
+            outline: none;
+        }
+
+        #add-song-btn {
+            background: #ff3e3e;
+            border: none;
+            color: #fff;
+            width: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .playlist-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .playlist-item-new {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .playlist-item-new:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .playlist-item-new.active {
+            background: rgba(255, 62, 62, 0.1);
+            border: 1px solid rgba(255, 62, 62, 0.2);
+        }
+
+        .playlist-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .playlist-remove {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .playlist-remove:hover {
+            color: #f00;
+        }
+
+        .stats-content {
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .stats-chart-wrapper {
+            flex: 1;
+            position: relative;
+            min-height: 0;
+            width: 100%;
+        }
+
+        .settings-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .bg-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .bg-item {
+            width: 100%;
+            padding-bottom: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid transparent;
+        }
+
+        .bg-item:hover {
+            transform: scale(1.05);
+        }
+
+        .bg-item.active {
+            border-color: var(--accent);
+        }
+
+        .bg-item.default-bg {
+            background-image: var(--bg-image-default);
+        }
+
+        #quick-capture-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #quick-capture-overlay.active {
+            display: flex;
+        }
+
+        .quick-capture-box {
+            width: 500px;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .quick-input {
+            width: 100%;
+            font-size: 1.5rem;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-family: 'Inter';
+        }
+
+        #break-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+            color: white;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #break-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .break-content {
+            text-align: center;
+            transform: translateY(20px);
+            transition: transform 0.5s;
+        }
+
+        #break-overlay.active .break-content {
+            transform: translateY(0);
+        }
+
+        .break-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            background: white;
+            color: black;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 700;
+            margin-top: 30px;
+        }
+
+        #event-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 100001;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #event-modal.active {
+            display: flex;
+        }
+
+        .clear-btn-fixed {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            padding: 6px 15px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            z-index: 100;
+            transition: 0.2s;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .clear-btn-fixed:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .settings-input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .settings-input-enhanced {
+            flex: 1;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            outline: none;
+            font-family: 'Inter';
+        }
+
+        .settings-input-enhanced::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-icon-square {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-icon-square:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        .time-select-group {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .time-select {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+            color: #fff;
+            outline: none;
+            cursor: pointer;
+            font-family: 'Inter';
+        }
+
+        .time-select option {
+            background: #1e293b;
+            color: white;
+        }
+
+        .event-color-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: 0.2s;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        .color-option.custom-wheel {
+            background: conic-gradient(from 0deg, red, yellow, lime, aqua, blue, magenta, red);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .custom-color-input {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .c-blue {
+            background: #3b82f6;
+        }
+
+        .c-red {
+            background: #ef4444;
+        }
+
+        .c-green {
+            background: #10b981;
+        }
+
+        .c-purple {
+            background: #8b5cf6;
+        }
+
+        .c-orange {
+            background: #f59e0b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="toast-container"></div>
+
+    <div id="event-modal">
+        <div class="quick-capture-box" style="width: 340px;">
+            <h3 id="modal-title" style="margin-bottom: 15px; color: var(--accent);">Thêm sự kiện</h3>
+
+            <input type="text" id="evt-title" class="settings-input-enhanced" style="width: 100%; margin-bottom: 15px;"
+                placeholder="Tên sự kiện...">
+
+            <div style="margin-bottom: 15px;">
+                <label style="font-size: 0.8rem; opacity: 0.7; display: block; margin-bottom: 5px;">Chọn ngày</label>
+                <select id="evt-day" class="settings-input-enhanced" style="width: 100%; cursor: pointer;">
+                    <option value="1" style="background:#1e293b">Thứ 2</option>
+                    <option value="2" style="background:#1e293b">Thứ 3</option>
+                    <option value="3" style="background:#1e293b">Thứ 4</option>
+                    <option value="4" style="background:#1e293b">Thứ 5</option>
+                    <option value="5" style="background:#1e293b">Thứ 6</option>
+                    <option value="6" style="background:#1e293b">Thứ 7</option>
+                    <option value="7" style="background:#1e293b">Chủ Nhật</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div class="time-select-group">
+                    <select id="evt-start" class="time-select"></select>
+                </div>
+                <div style="display: flex; align-items: center; color:var(--text-secondary);">-</div>
+                <div class="time-select-group">
+                    <select id="evt-end" class="time-select"></select>
+                </div>
+            </div>
+
+            <div class="event-color-group" id="evt-colors">
+                <div class="color-option c-blue" onclick="app.ai.selectColor(this, '#3b82f6')"></div>
+                <div class="color-option c-red" onclick="app.ai.selectColor(this, '#ef4444')"></div>
+                <div class="color-option c-green" onclick="app.ai.selectColor(this, '#10b981')"></div>
+                <div class="color-option c-purple" onclick="app.ai.selectColor(this, '#8b5cf6')"></div>
+                <div class="color-option c-orange" onclick="app.ai.selectColor(this, '#f59e0b')"></div>
+
+                <div class="color-option custom-wheel" title="Chọn màu tùy ý">
+                    <input type="color" class="custom-color-input" id="custom-color-picker"
+                        oninput="app.ai.selectCustomColor(this.value)">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="app.ai.saveEvent()">Lưu</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="app.ai.closeModal()">Hủy</button>
+            </div>
+            <button id="btn-delete" class="btn"
+                style="width: 100%; margin-top: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); display: none;"
+                onclick="app.ai.deleteEvent()">Xóa sự kiện</button>
+        </div>
+    </div>
+
+    <audio id="audio-rain" loop src="https://actions.google.com/sounds/v1/weather/rain_heavy_loud.ogg"></audio>
+    <audio id="audio-fire" loop src="https://actions.google.com/sounds/v1/ambiences/fireplace.ogg"></audio>
+    <audio id="audio-cafe" loop src="https://actions.google.com/sounds/v1/ambiences/coffee_shop.ogg"></audio>
+    <audio id="audio-break" src="https://actions.google.com/sounds/v1/alarms/spaceship_alarm.ogg"></audio>
+
+    <div id="break-overlay">
+        <div class="break-content">
+            <h1 style="font-size:3rem; margin-bottom:20px;">Time for a Break! ☕</h1>
+            <p id="break-quote" style="font-size:1.2rem; font-style:italic; margin-bottom:40px;">"Rest is not idleness."
+            </p>
+            <button class="break-btn" onclick="app.reminder.close()">I'm Back</button>
+        </div>
+    </div>
+
+    <div id="quick-capture-overlay">
+        <div class="quick-capture-box">
+            <input type="text" class="quick-input" id="quick-input" placeholder="Type idea & press Enter...">
+            <div style="margin-top:10px; font-size:0.8rem; opacity:0.6">Press ESC to close</div>
+        </div>
+    </div>
+
+    <button id="chat-fab" class="fab" onclick="app.widget.toggle('chat')"><i class="fa-solid fa-robot"></i></button>
+    <button id="music-toggle" class="fab" onclick="app.widget.toggle('music')"><i
+            class="fa-solid fa-music"></i></button>
+    <button id="stats-fab" class="fab" onclick="app.widget.toggle('stats')"><i
+            class="fa-solid fa-chart-simple"></i></button>
+    <button id="goals-fab" class="fab" onclick="app.widget.toggle('goals')"><i
+            class="fa-solid fa-check-double"></i></button>
+
+    <div id="chat-widget" class="widget-draggable">
+        <div class="widget-header" id="chat-header"><span>Gen 1 AI</span><i class="fa-solid fa-xmark"
+                style="cursor:pointer; opacity:0.6" onclick="app.widget.toggle('chat')"></i></div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message bot">Chào bạn!</div>
+        </div>
+        <div style="padding:15px; border-top:1px solid var(--glass-border); display:flex; gap:10px; flex-shrink:0;">
+            <input type="text" id="chat-input" placeholder="Nhập tin nhắn..."
+                style="flex:1; border:none; background:rgba(255,255,255,0.3); padding:12px; border-radius:25px; outline:none;"><button
+                onclick="app.chat.send()" class="liquid-btn" style="width:45px; height:45px;"><i
+                    class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div id="goals-widget" class="widget-draggable">
+        <div class="widget-header" id="goals-header"><span>Mục tiêu</span><span
+                style="font-size:0.75rem; cursor:pointer" onclick="app.goals.clear()">Xóa hết</span></div>
+        <div class="goal-list" id="goal-list"></div>
+        <div style="padding:15px; display:flex; gap:10px; border-top:1px solid var(--glass-border); flex-shrink:0;">
+            <input type="text" id="goal-input" placeholder="Thêm..."
+                style="flex:1; border:1px solid var(--glass-border); background:rgba(255,255,255,0.3); padding:8px; border-radius:12px; outline:none;"><button
+                onclick="app.goals.add()" class="liquid-btn" style="width:35px; height:35px;"><i
+                    class="fa-solid fa-plus"></i></button>
+        </div>
+    </div>
+
+    <div id="stats-widget" class="widget-draggable">
+        <div class="widget-header" id="stats-header"><span>Thống kê</span><i class="fa-solid fa-xmark"
+                style="cursor:pointer; opacity:0.6" onclick="app.widget.toggle('stats')"></i></div>
+        <div class="stats-content">
+            <h3 style="color:var(--text-secondary); font-size:0.9rem;">Tổng giờ tập trung</h3>
+            <div class="stats-number" id="total-focus-time">0h 0m</div>
+            <div class="stats-chart-wrapper"><canvas id="stats-chart"></canvas></div>
+        </div>
+    </div>
+
+    <div id="settings-widget" class="widget-draggable">
+        <div class="widget-header" id="settings-header"><span>Cài đặt</span><i class="fa-solid fa-xmark"
+                style="cursor:pointer; opacity:0.6" onclick="app.widget.toggle('settings')"></i></div>
+        <div class="settings-content">
+            <div class="settings-group">
+                <span class="settings-label">Thư viện hình nền</span>
+                <div class="bg-grid" id="bg-gallery"></div>
+            </div>
+
+            <div class="settings-group">
+                <span class="settings-label">Hình nền mới (URL)</span>
+                <div class="settings-input-group">
+                    <input type="text" class="settings-input-enhanced" id="bg-input"
+                        placeholder="Dán link ảnh tại đây..." onchange="app.settings.updateBG(this.value)">
+                    <button class="btn-icon-square" onclick="app.settings.saveCurrentToHistory()"><i
+                            class="fas fa-save"></i></button>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <span class="settings-label">Màu chủ đạo</span>
+                <div style="display:flex; justify-content:center; gap:10px;">
+                    <div class="color-option c-blue" onclick="app.settings.updateAccent('#3b82f6')"></div>
+                    <div class="color-option c-red" onclick="app.settings.updateAccent('#ef4444')"></div>
+                    <div class="color-option c-green" onclick="app.settings.updateAccent('#10b981')"></div>
+                    <div class="color-option c-purple" onclick="app.settings.updateAccent('#8b5cf6')"></div>
+                    <div class="color-option c-orange" onclick="app.settings.updateAccent('#f59e0b')"></div>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <span class="settings-label">Độ mờ kính</span>
+                <input type="range" min="0" max="50" value="30" style="width:100%"
+                    oninput="app.settings.updateBlur(this.value)">
+            </div>
+
+            <button class="btn btn-secondary" style="width:100%" onclick="app.settings.resetLayout()">Reset
+                Layout</button>
+        </div>
+    </div>
+
+    <div id="music-panel" class="widget-draggable">
+        <div class="music-widget">
+            <div class="player-header" id="music-header">
+                <span class="logo"><i class="fab fa-youtube"></i> Music</span>
+                <div style="display:flex; gap:15px">
+                    <button class="icon-btn" onclick="app.music.togglePlaylistPanel()"><i
+                            class="fas fa-list"></i></button>
+                    <button class="icon-btn" onclick="app.widget.toggle('music')"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+            <div class="album-art-container">
+                <div class="album-art" id="current-art"><img src="https://placehold.co/300x300/1a1a1a/FFF?text=Music">
+                </div>
+                <div id="player-hidden"></div>
+            </div>
+            <div class="track-info">
+                <h2 id="track-title">Select a Song</h2>
+                <p id="track-artist">Library</p>
+            </div>
+            <div class="controls-wrapper">
+                <div class="progress-container" id="progress-container" onclick="app.music.onSeekClick(event)">
+                    <div class="progress-bar" id="progress-bar"></div>
+                    <div class="time-info"><span id="current-time">0:00</span><span id="duration">0:00</span></div>
+                </div>
+                <div class="controls"><button class="control-btn" onclick="app.music.prev()"><i
+                            class="fas fa-step-backward"></i></button><button class="control-btn main-play"
+                        id="play-btn" onclick="app.music.togglePlay()"><i class="fas fa-play"></i></button><button
+                        class="control-btn" onclick="app.music.next()"><i class="fas fa-step-forward"></i></button>
+                </div>
+                <div class="volume-container"><i class="fas fa-volume-down"></i><input type="range" id="volume-slider"
+                        min="0" max="100" value="50" oninput="app.music.setVolume(this.value)"></div>
+            </div>
+            <div class="playlist-panel" id="playlist-panel">
+                <div class="playlist-header">
+                    <h3>Playlist</h3><button class="icon-btn" onclick="app.music.togglePlaylistPanel()"><i
+                            class="fas fa-angle-down"></i></button>
+                </div>
+                <div class="add-song-form"><input type="text" id="yt-url-input" placeholder="Paste YouTube URL"><button
+                        id="add-song-btn" onclick="app.music.addFromInput()"><i class="fas fa-plus"></i></button></div>
+                <ul class="playlist-list" id="playlist-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo" onclick="app.nav('home-view')">G1</div>
+            <nav class="nav-items">
+                <a class="nav-btn active" onclick="app.nav('home-view')"><i class="fa-solid fa-house"></i></a>
+                <a href="https://notion.so" target="_blank" class="nav-btn"><i class="fa-solid fa-n"></i></a>
+                <a href="https://calendar.google.com" target="_blank" class="nav-btn"><i
+                        class="fa-regular fa-calendar"></i></a>
+                <a class="nav-btn" onclick="app.widget.toggle('settings')"><i class="fa-solid fa-gear"></i></a>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="theme-btn" onclick="app.toggleTheme()"><i class="fa-solid fa-moon"></i></button>
+            </div>
+        </aside>
+
+        <main class="main">
+            <section id="home-view" class="view active">
+                <div class="hero">
+                    <h1>Gen 1</h1>
+                    <p style="color:var(--text-secondary)">Your AI-Powered Productivity Hub</p>
+                </div>
+                <div class="grid">
+                    <div class="card" onclick="app.deep.start()"><i class="fa-solid fa-brain"></i>
+                        <h3>Deep Focus</h3>
+                    </div>
+                    <div class="card" onclick="app.nav('panorama-view')"><i class="fa-solid fa-stopwatch"></i>
+                        <h3>Pomodoro</h3>
+                    </div>
+                    <div class="card" onclick="app.nav('ai-view')"><i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <h3>AI Schedule</h3>
+                    </div>
+                </div>
+            </section>
+            <section id="deep-view" class="view">
+                <button class="exit-btn" onclick="app.deep.stop()">Exit</button>
+                <div class="timer-large" id="deep-display">00:00:00</div>
+                <p id="deep-quote" style="margin-top:30px; color:rgba(255,255,255,0.7); font-style:italic;">"Silence is
+                    the think tank of the soul."</p>
+            </section>
+            <section id="panorama-view" class="view">
+                <div class="pomo-box">
+                    <h2 style="color:var(--accent);">POMODORO</h2>
+                    <div class="timer-medium" id="pomo-display">25:00</div>
+                    <div class="btn-group"><button class="btn btn-primary" onclick="app.pomo.toggle()"
+                            id="pomo-btn">Start</button><button class="btn btn-secondary"
+                            onclick="app.pomo.reset()">Reset</button></div>
+                </div>
+            </section>
+            <section id="ai-view" class="view">
+                <div class="ai-toolbar">
+                    <h2>AI Scheduler</h2>
+                    <div class="api-group"><input type="password" id="api-key-input" class="api-input"
+                            placeholder="API Key..."><button class="btn btn-primary"
+                            onclick="app.ai.saveKey()">Lưu</button></div>
+                </div>
+                <input type="file" id="file-upload" hidden accept="image/*" onchange="app.ai.handleUpload(this)">
+                <div class="upload-bar" onclick="document.getElementById('file-upload').click()">
+                    <div><i class="fa-solid fa-cloud-arrow-up"></i> Tải ảnh lịch</div>
+                </div>
+                <div class="workspace-grid">
+                    <div class="cal-wrapper" id="cal-grid">
+                        <div class="clear-btn-fixed" onclick="app.ai.clearData()">Clear</div>
+                        <div class="overlay" id="loading-overlay">
+                            <div class="spinner"></div>
+                            <p>Processing...</p>
+                        </div>
+                    </div>
+                    <div class="notes-panel">
+                        <div class="notes-header">Ghi chú</div><textarea class="notes-area" id="notes-area"
+                            placeholder="..."></textarea>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        let maxZIndex = 20000;
+        function makeDraggable(el, headerId) {
+            const header = document.getElementById(headerId);
+            if (!header) return;
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            header.onmousedown = dragMouseDown;
+            el.onmousedown = () => { maxZIndex++; el.style.zIndex = maxZIndex; };
+
+            function dragMouseDown(e) { e.preventDefault(); pos3 = e.clientX; pos4 = e.clientY; document.onmouseup = closeDragElement; document.onmousemove = elementDrag; document.querySelectorAll('.widget-draggable').forEach(w => w.classList.remove('active')); el.classList.add('active'); }
+            function elementDrag(e) {
+                e.preventDefault();
+                pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY; pos3 = e.clientX; pos4 = e.clientY;
+                let top = el.offsetTop - pos2;
+                let left = el.offsetLeft - pos1;
+                if (top < 30) top = 0; if (left < 30) left = 0;
+                if (window.innerHeight - (top + el.offsetHeight) < 30) top = window.innerHeight - el.offsetHeight;
+                if (window.innerWidth - (left + el.offsetWidth) < 30) left = window.innerWidth - el.offsetWidth;
+                el.style.top = top + "px"; el.style.left = left + "px"; el.style.bottom = "auto"; el.style.right = "auto";
+            }
+            function closeDragElement() { document.onmouseup = null; document.onmousemove = null; }
+        }
+
+        var ytPlayer, progressInterval;
+        let currentPlaylist = JSON.parse(localStorage.getItem('g1-custom-playlist')) || [];
+        let currentIndex = parseInt(localStorage.getItem('g1-playlist-index')) || 0;
+
+        function onYouTubeIframeAPIReady() { app.music.initPlayer(); }
+
+        const app = {
+            state: { theme: 'light' },
+
+            init() {
+                const savedTheme = localStorage.getItem('g1-theme') || 'light'; this.setTheme(savedTheme);
+                const savedKey = localStorage.getItem('g1-api-key'); if (savedKey) document.getElementById('api-key-input').value = savedKey;
+                document.getElementById('notes-area').value = localStorage.getItem('g1-notes') || "";
+                document.getElementById('notes-area').addEventListener('input', (e) => localStorage.setItem('g1-notes', e.target.value));
+                document.getElementById('chat-input').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); app.chat.send(); } });
+                document.getElementById('goal-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') app.goals.add(); });
+
+                document.addEventListener('keydown', (e) => { if (e.altKey && e.key.toLowerCase() === 'q') app.quickCapture.toggle(); });
+                document.getElementById('quick-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') app.quickCapture.save(); if (e.key === 'Escape') app.quickCapture.close(); });
+
+                ['music-panel', 'chat-widget', 'goals-widget', 'stats-widget', 'settings-widget'].forEach(id => makeDraggable(document.getElementById(id), id.replace('panel', 'header').replace('widget', 'header')));
+
+                this.ai.renderGrid(); this.ai.loadSavedEvents(); this.ai.initTimeSelects();
+                this.goals.init(); this.stats.init(); this.settings.load(); this.settings.renderGallery();
+            },
+
+            nav(id) {
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                if (id === 'home-view') document.querySelector('.nav-btn[onclick*="home-view"]').classList.add('active');
+            },
+
+            setTheme(name) {
+                document.documentElement.setAttribute('data-theme', name);
+                localStorage.setItem('g1-theme', name);
+                this.state.theme = name;
+                document.querySelector('.theme-btn i').className = name === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+            },
+
+            toggleTheme() { this.setTheme(this.state.theme === 'light' ? 'dark' : 'light'); },
+
+            widget: { toggle(id) { const w = document.getElementById(id + '-widget') || document.getElementById(id + '-panel'); w.classList.toggle('show'); w.classList.add('active'); w.style.zIndex = ++maxZIndex; } },
+
+            // RESTORED TOAST
+            toast(msg) {
+                const c = document.getElementById('toast-container');
+                const t = document.createElement('div');
+                t.className = 'toast';
+                t.innerHTML = `<i class="fa-solid fa-circle-info" style="color:var(--accent)"></i><span>${msg}</span>`;
+                c.appendChild(t);
+                setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+            },
+
+            settings: {
+                gallery: JSON.parse(localStorage.getItem('g1-bg-history')) || [],
+                load() {
+                    const bg = localStorage.getItem('g1-bg');
+                    if (bg && bg !== 'default') document.body.style.backgroundImage = `url('${bg}')`;
+                    const acc = localStorage.getItem('g1-accent'); if (acc) document.documentElement.style.setProperty('--accent', acc);
+                    const blur = localStorage.getItem('g1-blur'); if (blur) document.documentElement.style.setProperty('--glass-blur', blur + 'px');
+                },
+                updateBG(url) {
+                    if (url === 'default') { document.body.style.backgroundImage = ''; localStorage.setItem('g1-bg', 'default'); }
+                    else { document.body.style.backgroundImage = `url('${url}')`; localStorage.setItem('g1-bg', url); }
+                    app.toast("Background Updated!");
+                },
+                saveCurrentToHistory() {
+                    const url = document.getElementById('bg-input').value.trim();
+                    if (url && !this.gallery.includes(url)) { this.gallery.push(url); localStorage.setItem('g1-bg-history', JSON.stringify(this.gallery)); this.renderGallery(); app.toast("Saved to Gallery!"); }
+                },
+                updateAccent(col) { document.documentElement.style.setProperty('--accent', col); localStorage.setItem('g1-accent', col); },
+                updateBlur(val) { document.documentElement.style.setProperty('--glass-blur', val + 'px'); localStorage.setItem('g1-blur', val); },
+                resetLayout() {
+                    document.querySelectorAll('.widget-draggable').forEach(el => { el.style.removeProperty('top'); el.style.removeProperty('left'); el.style.removeProperty('right'); el.style.removeProperty('bottom'); });
+                    app.toast("Layout Reset!");
+                },
+                renderGallery() {
+                    const c = document.getElementById('bg-gallery');
+                    c.innerHTML = '<div class="bg-item default-bg" onclick="app.settings.updateBG(\'default\')" title="Default"></div>';
+                    this.gallery.forEach(url => { const div = document.createElement('div'); div.className = 'bg-item'; div.style.backgroundImage = `url('${url}')`; div.onclick = () => this.updateBG(url); c.appendChild(div); });
+                }
+            },
+            quickCapture: { toggle() { const el = document.getElementById('quick-capture-overlay'); el.classList.toggle('active'); if (el.classList.contains('active')) document.getElementById('quick-input').focus(); }, save() { const val = document.getElementById('quick-input').value; if (val) { const area = document.getElementById('notes-area'); area.value += `\n- ${val}`; localStorage.setItem('g1-notes', area.value); document.getElementById('quick-input').value = ''; this.close(); app.toast("Note Saved!"); } }, close() { document.getElementById('quick-capture-overlay').classList.remove('active'); } },
+            ambient: { setVolume(t, v) { const a = document.getElementById('audio-' + t); if (a) { a.volume = v / 100; if (v > 0 && a.paused) a.play().catch(() => { }); if (v == 0) a.pause(); } } },
+            goals: { list: [], init() { const s = localStorage.getItem('g1-goals'); const d = localStorage.getItem('g1-goals-date'); const t = new Date().toDateString(); if (d !== t) { this.list = []; localStorage.setItem('g1-goals-date', t); } else if (s) this.list = JSON.parse(s); this.render(); }, add() { const i = document.getElementById('goal-input'); if (i.value.trim()) { this.list.push({ text: i.value.trim(), done: false }); this.save(); this.render(); i.value = ''; } }, toggle(i) { this.list[i].done = !this.list[i].done; this.save(); this.render(); }, remove(i) { this.list.splice(i, 1); this.save(); this.render(); }, clear() { if (confirm("Xóa?")) { this.list = []; this.save(); this.render(); } }, save() { localStorage.setItem('g1-goals', JSON.stringify(this.list)) }, render() { const c = document.getElementById('goal-list'); c.innerHTML = this.list.map((g, i) => `<div class="goal-item ${g.done ? 'done' : ''}"><input type="checkbox" class="goal-checkbox" ${g.done ? 'checked' : ''} onchange="app.goals.toggle(${i})"><span class="goal-text">${g.text}</span><i class="fa-solid fa-trash goal-delete" onclick="app.goals.remove(${i})"></i></div>`).join('') } },
+            stats: { data: { pomos: 0, focusMinutes: 0, daily: [0, 0, 0, 0, 0, 0, 0] }, chart: null, init() { const s = localStorage.getItem('g1-stats'); if (s) this.data = JSON.parse(s); this.render(); }, logPomo(m) { this.data.pomos++; this.data.focusMinutes += m; const d = new Date().getDay(); const i = d === 0 ? 6 : d - 1; this.data.daily[i] += m; this.save(); this.render(); }, save() { localStorage.setItem('g1-stats', JSON.stringify(this.data)) }, render() { document.getElementById('total-focus-time').innerText = `${Math.floor(this.data.focusMinutes / 60)}h ${this.data.focusMinutes % 60}m`; if (this.chart) this.chart.destroy(); const ctx = document.getElementById('stats-chart').getContext('2d'); this.chart = new Chart(ctx, { type: 'bar', data: { labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], datasets: [{ label: 'Mins', data: this.data.daily, backgroundColor: '#3b82f6', borderRadius: 4 }] }, options: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } }, responsive: true, maintainAspectRatio: false } }); } },
+            reminder: { timer: null, start(m) { clearTimeout(this.timer); this.timer = setTimeout(() => { document.getElementById('break-overlay').classList.add('active'); document.getElementById('audio-break').play(); }, m * 60 * 1000); }, close() { document.getElementById('break-overlay').classList.remove('active'); document.getElementById('audio-break').pause(); } },
+            music: {
+                player: null, isPlaying: false, currentIndex: 0, playlist: JSON.parse(localStorage.getItem('yt_playlist')) || [{ title: "Lofi", id: "jfKfPfyJRdk" }],
+                initPlayer() { if (!window.YT) return; this.player = new YT.Player('player-hidden', { height: '1', width: '1', videoId: this.playlist[0].id, events: { 'onReady': () => this.loadTrack(this.currentIndex, false), 'onStateChange': (e) => this.onStateChange(e) } }); },
+                onStateChange(e) { if (e.data == 1) { this.isPlaying = true; this.updateBtn(); } else if (e.data == 2) { this.isPlaying = false; this.updateBtn(); } else if (e.data == 0) this.next(); },
+                togglePlay() { if (this.player) { if (this.isPlaying) this.player.pauseVideo(); else this.player.playVideo(); } },
+                next() { this.currentIndex = (this.currentIndex + 1) % this.playlist.length; this.loadTrack(this.currentIndex); },
+                prev() { this.currentIndex = (this.currentIndex - 1 + this.playlist.length) % this.playlist.length; this.loadTrack(this.currentIndex); },
+                loadTrack(i, auto = true) { this.currentIndex = i; const t = this.playlist[i]; document.getElementById('track-title').innerText = t.title; document.getElementById('current-art').innerHTML = `<img src="https://img.youtube.com/vi/${t.id}/0.jpg">`; this.renderList(); if (this.player && this.player.loadVideoById) { if (auto) this.player.loadVideoById(t.id); else this.player.cueVideoById(t.id); } },
+                updateBtn() { document.getElementById('play-btn').innerHTML = this.isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; },
+                addFromInput() { const v = document.getElementById('yt-url-input').value.match(/[?&]v=([^&]+)/); if (v) { this.playlist.push({ title: "New Song", id: v[1] }); localStorage.setItem('yt_playlist', JSON.stringify(this.playlist)); this.renderList(); document.getElementById('yt-url-input').value = ''; } },
+                renderList() { document.getElementById('playlist-list').innerHTML = this.playlist.map((t, i) => `<li class="playlist-item-new ${i === this.currentIndex ? 'active' : ''}" onclick="app.music.loadTrack(${i})"><div style="flex:1">${t.title}</div><button class="playlist-remove" onclick="event.stopPropagation();app.music.remove(${i})"><i class="fas fa-trash"></i></button></li>`).join(''); },
+                remove(i) { this.playlist.splice(i, 1); localStorage.setItem('yt_playlist', JSON.stringify(this.playlist)); this.renderList(); },
+                togglePlaylistPanel() { document.getElementById('playlist-panel').classList.toggle('active'); },
+                onSeekClick(e) { if (!this.player) return; const p = e.offsetX / e.target.clientWidth; this.player.seekTo(p * this.player.getDuration(), true); },
+                setVolume(v) { if (this.player) this.player.setVolume(v); }
+            },
+            deep: { timer: null, sec: 0, start() { app.nav('deep-view'); document.documentElement.requestFullscreen().catch(() => { }); this.timer = setInterval(() => { this.sec++; document.getElementById('deep-display').innerText = new Date(this.sec * 1000).toISOString().substr(11, 8) }, 1000); app.reminder.start(60); }, stop() { clearInterval(this.timer); document.exitFullscreen().catch(() => { }); app.nav('home-view'); app.reminder.close(); app.stats.logPomo(Math.floor(this.sec / 60)); } },
+            pomo: { timer: null, time: 1500, running: false, toggle() { const b = document.getElementById('pomo-btn'); if (this.running) { clearInterval(this.timer); this.running = false; b.innerText = "Resume"; } else { this.timer = setInterval(() => { this.time--; const m = Math.floor(this.time / 60), s = this.time % 60; document.getElementById('pomo-display').innerText = `${m}:${s < 10 ? '0' : ''}${s}`; if (this.time <= 0) { clearInterval(this.timer); app.toast("Pomodoro Done!"); this.reset(); app.stats.logPomo(25); } }, 1000); this.running = true; b.innerText = "Pause"; } }, reset() { clearInterval(this.timer); this.time = 1500; this.running = false; document.getElementById('pomo-display').innerText = "25:00"; document.getElementById('pomo-btn').innerText = "Start"; } },
+            chat: { async send() { const i = document.getElementById('chat-input'); if (!i.value) return; const k = localStorage.getItem('g1-api-key'); if (!k) return app.toast("Missing Key"); this.append(i.value, 'user'); const t = i.value; i.value = ''; try { const m = localStorage.getItem('g1-ai-model') || 'gemini-2.5-flash'; const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${k}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: t }] }] }) }); const d = await r.json(); if (d.error) throw new Error(d.error.message); this.append(d.candidates[0].content.parts[0].text, 'bot'); } catch (e) { this.append("Error: " + e.message, 'bot') } }, append(t, r) { const d = document.createElement('div'); d.className = `message ${r}`; d.innerText = t; document.getElementById('chat-messages').appendChild(d); } },
+
+            // --- GEN 2: INTERACTIVE SCHEDULE (SMART COLOR) ---
+            ai: {
+                currentEditIndex: -1,
+                events: [],
+                selectedColor: '#3b82f6',
+                palette: ['#3b82f6', '#ef4444', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#6366f1'],
+
+                getRandomColor() { return this.palette[Math.floor(Math.random() * this.palette.length)]; },
+
+                saveKey() { localStorage.setItem('g1-api-key', document.getElementById('api-key-input').value); app.toast("API Key Saved!"); },
+
+                clearData() { localStorage.removeItem('g1-events'); this.loadSavedEvents(); app.toast("Schedule Cleared!"); },
+
+                initTimeSelects() {
+                    const startSel = document.getElementById('evt-start');
+                    const endSel = document.getElementById('evt-end');
+                    startSel.innerHTML = ''; endSel.innerHTML = '';
+                    for (let i = 7; i <= 22; i++) {
+                        ['00', '30'].forEach(m => {
+                            const val = `${i < 10 ? '0' + i : i}:${m}`;
+                            startSel.add(new Option(val, val));
+                            endSel.add(new Option(val, val));
+                        });
+                    }
+                    startSel.value = "07:00"; endSel.value = "08:00";
+                },
+
+                selectColor(el, color) {
+                    this.selectedColor = color;
+                    document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+                    if (el) el.classList.add('selected');
+                },
+
+                selectCustomColor(color) {
+                    this.selectedColor = color;
+                    document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+                    document.getElementById('custom-color-picker').parentElement.classList.add('selected');
+                },
+
+                renderGrid() {
+                    const g = document.getElementById('cal-grid');
+                    Array.from(g.children).forEach(c => { if (!c.classList.contains('overlay') && !c.classList.contains('clear-btn-fixed')) c.remove() });
+                    ['Time', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].forEach(t => { const d = document.createElement('div'); d.className = 'cal-header'; d.innerText = t; g.appendChild(d) });
+                    for (let h = 7; h <= 22; h++) {
+                        const t = document.createElement('div'); t.className = 'cal-time'; t.innerText = `${h}:00`; g.appendChild(t);
+                        for (let d = 1; d <= 7; d++) {
+                            const c = document.createElement('div');
+                            c.className = 'cal-cell';
+                            c.dataset.day = d; c.dataset.hour = h;
+                            c.onclick = () => app.ai.openModal('add', { day: d, hour: h });
+                            g.appendChild(c);
+                        }
+                    }
+                },
+
+                loadSavedEvents() {
+                    const s = localStorage.getItem('g1-events');
+                    this.events = s ? JSON.parse(s) : [];
+                    this.drawEvents(this.events);
+                },
+
+                handleUpload(i) {
+                    const f = i.files[0]; if (!f) return; const k = localStorage.getItem('g1-api-key'); if (!k) return app.toast("Missing API Key"); document.getElementById('loading-overlay').style.display = 'flex'; const r = new FileReader(); r.onload = async () => {
+                        try {
+                            const u = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${k}`; const p = "Extract schedule from image. Return ONLY raw JSON array: [{\"title\":\"Name\",\"day\":\"Mon\",\"start\":\"07:00\",\"end\":\"09:00\"}]. No markdown."; const res = await fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: p }, { inline_data: { mime_type: "image/jpeg", data: r.result.split(',')[1] } }] }] }) }); const d = await res.json(); const j = JSON.parse(d.candidates[0].content.parts[0].text.match(/\[.*\]/s)[0]);
+
+                            j.forEach(e => { e.color = e.color || app.ai.getRandomColor(); });
+
+                            localStorage.setItem('g1-events', JSON.stringify(j)); this.loadSavedEvents(); app.toast("Schedule Processed!");
+                        } catch (e) { app.toast("AI Error: " + e.message) } finally { document.getElementById('loading-overlay').style.display = 'none' }
+                    }; r.readAsDataURL(f);
+                },
+
+                drawEvents(evs) {
+                    document.querySelectorAll('.event').forEach(e => e.remove());
+                    const m = { "mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6, "sun": 7, "thứ 2": 1, "thứ 3": 2, "thứ 4": 3, "thứ 5": 4, "thứ 6": 5, "thứ 7": 6, "chủ nhật": 7, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7 };
+                    evs.forEach((e, i) => {
+                        let d = m[e.day.toString().toLowerCase().trim()] || e.day;
+                        if (!d) return;
+                        const [sh, sm] = e.start.split(':').map(Number);
+                        const [eh, em] = e.end.split(':').map(Number);
+                        const dur = ((eh * 60) + em) - ((sh * 60) + sm);
+                        const c = document.querySelector(`.cal-cell[data-day="${d}"][data-hour="${sh}"]`);
+                        if (c) {
+                            const el = document.createElement('div');
+                            el.className = 'event';
+                            el.innerHTML = `<b>${e.title}</b><br>${e.start}-${e.end}`;
+                            el.style.top = `${sm}px`; el.style.height = `${dur}px`;
+
+                            const color = e.color || '#3b82f6';
+                            el.style.background = color;
+                            el.style.borderLeft = `4px solid rgba(0,0,0,0.2)`;
+
+                            el.onclick = (event) => { event.stopPropagation(); app.ai.openModal('edit', { index: i, ...e }); };
+                            c.appendChild(el);
+                        }
+                    });
+                },
+
+                openModal(mode, data) {
+                    const m = document.getElementById('event-modal');
+                    m.classList.add('active');
+
+                    if (mode === 'add') {
+                        document.getElementById('modal-title').innerText = "Thêm sự kiện";
+                        document.getElementById('evt-title').value = "";
+                        document.getElementById('evt-day').value = data.day;
+                        document.getElementById('evt-start').value = `${data.hour < 10 ? '0' + data.hour : data.hour}:00`;
+                        document.getElementById('evt-end').value = `${data.hour + 1 < 10 ? '0' + (data.hour + 1) : data.hour + 1}:00`;
+                        document.getElementById('btn-delete').style.display = 'none';
+
+                        const randColor = this.getRandomColor();
+                        this.selectColor(null, randColor);
+                        this.currentEditIndex = -1;
+                    } else {
+                        document.getElementById('modal-title').innerText = "Sửa sự kiện";
+                        document.getElementById('evt-title').value = data.title;
+                        const mapReverse = { "mon": 1, "tue": 2, "wed": 3, "thu": 4, "fri": 5, "sat": 6, "sun": 7 };
+                        let dVal = mapReverse[data.day.toString().toLowerCase()] || data.day;
+                        document.getElementById('evt-day').value = dVal;
+                        document.getElementById('evt-start').value = data.start;
+                        document.getElementById('evt-end').value = data.end;
+                        document.getElementById('btn-delete').style.display = 'block';
+
+                        if (data.color) {
+                            this.selectedColor = data.color;
+                            document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+                        }
+                        this.currentEditIndex = data.index;
+                    }
+                },
+
+                closeModal() {
+                    document.getElementById('event-modal').classList.remove('active');
+                },
+
+                saveEvent() {
+                    const title = document.getElementById('evt-title').value;
+                    const day = document.getElementById('evt-day').value;
+                    const start = document.getElementById('evt-start').value;
+                    const end = document.getElementById('evt-end').value;
+
+                    if (!title) return app.toast("Vui lòng nhập tên sự kiện");
+
+                    const newEvent = { title, day, start, end, color: this.selectedColor };
+
+                    if (this.currentEditIndex === -1) {
+                        this.events.push(newEvent);
+                    } else {
+                        this.events[this.currentEditIndex] = newEvent;
+                    }
+
+                    localStorage.setItem('g1-events', JSON.stringify(this.events));
+                    this.drawEvents(this.events);
+                    this.closeModal();
+                    app.toast("Saved!");
+                },
+
+                deleteEvent() {
+                    if (this.currentEditIndex > -1) {
+                        if (confirm("Xóa sự kiện này?")) {
+                            this.events.splice(this.currentEditIndex, 1);
+                            localStorage.setItem('g1-events', JSON.stringify(this.events));
+                            this.drawEvents(this.events);
+                            this.closeModal();
+                            app.toast("Deleted!");
+                        }
+                    }
+                }
+            }
+        };
+        app.init();
+    </script>
+</body>
+
+</html>
